@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-I. -Wall
 DEPS = 
-OBJ = robot.o
+OBJ = motors.o robot.o
 EXTRA_LIBS=-lwiringPi -lpthread -lpaho-mqtt3c
 
 %.o: %.c $(DEPS)
