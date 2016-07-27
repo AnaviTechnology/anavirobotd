@@ -10,7 +10,6 @@
 
 #include "motors.h"
 
-#define ADDRESS		"tcp://192.168.4.91:1883"
 #define CLIENTID	"RabbitMaxRobot"
 #define TIMEOUT		10000L
 
@@ -113,8 +112,40 @@ void connlost(void *context, char *cause)
 	printf("	 cause: %s\n", cause);
 }
 
-int main(/*int argc, char* argv[]*/)
+int main(int argc, char* argv[])
 {
+	char *mqttBrokerIP = "iot.eclipse.org";
+	char *mqttBrokerPort = "1883";
+	opterr = 0;
+	int argument = 0;
+	while ((argument = getopt (argc, argv, "b:p:")) != -1)
+	{
+		switch (argument)
+		{
+			case 'b':
+				mqttBrokerIP = optarg;
+			break;
+
+			case 'p':
+				mqttBrokerPort = optarg;
+			break;
+
+			case '?':
+				if ('b' == optopt)
+				{
+					fprintf (stderr, "Option -%c requires MQTT broker IP or domain as an argument.\n", optopt);
+				}
+				else if ('p' == optopt)
+				{
+					fprintf (stderr, "Option -%c requires MQTT broker port as an argument.\n", optopt);
+				}
+				return 1;
+
+			default:
+				abort();
+		}
+	}
+
 	if (0 < init())
 	{
 		return 1;
@@ -125,7 +156,12 @@ int main(/*int argc, char* argv[]*/)
 	int rc;
 	int ch;
 
-	MQTTClient_create(&client, ADDRESS, CLIENTID,
+	char* mqttAddress = malloc(strlen(mqttBrokerIP)+2+strlen(mqttBrokerPort));
+	strcpy(mqttAddress, mqttBrokerIP);
+	strcat(mqttAddress, ":");
+	strcat(mqttAddress, mqttBrokerPort);
+
+	MQTTClient_create(&client, mqttAddress, CLIENTID,
 		MQTTCLIENT_PERSISTENCE_NONE, NULL);
 	conn_opts.keepAliveInterval = 20;
 	conn_opts.cleansession = 1;
